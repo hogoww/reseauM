@@ -1,0 +1,72 @@
+/*gcc -ansi -Wall -pedantic -o 4_2 4.2.c -lpthread -std=c99*/
+
+#include <stdio.h>
+#include <pthread.h>
+#include <unistd.h>//sleep()
+
+//Useless since there's no parallelism possible with only one lock
+
+//How much task we do at the same time
+#define THREAD_NUMBER 4
+//Dummy var, since we simulate the picture
+#define NUMBER_OF_AREA 10
+
+struct thread_data{
+  size_t last_thread_on_that_zone[THREAD_NUMBER];
+  int picture[NUMBER_OF_AREA];//No uses, just for coherence
+  
+  pthread_mutex_t mut;//Only mutex we're allowed to have
+};
+
+void* f1(void* p){
+  struct thread_data* param=(struct thread_data*)p;//To cast only once.
+
+  size_t my_function_number=1;
+  
+  for(size_t i=0;i<NUMBER_OF_AREA;++i){
+    while(1){
+      pthread_mutex_lock(&(param->mut));
+      if(param->last_thread_on_that_zone[i]!=my_function_number){
+	pthread_mutex_unlock(&(param->mut));//The previous thread isn't done with that area, we wait and give back the lock.
+	sleep(1);
+      }
+      else
+	break;//previous thread is done, we got the lock, let's roll !
+    }
+    sleep(1);//Working on the i'th area
+    param->last_thread_on_that_zone[i]++;//So the first thread can take that area.
+    pthread_mutex_unlock(&(param->mut));//Done with that area.
+  }
+  pthread_exit(NULL);
+}
+
+void init_thread_data(struct thread_data* p){
+for(size_t i=0;i<THREAD_NUMBER;++i){
+p->last_thread_on_that_zone[i]=0;
+  }
+  pthread_mutex_init(&(p->mut),NULL);
+}
+
+int main(){
+  struct thread_data* param;
+  init_thread_data(p);
+  
+  pthread_t idT[THREAD_NUMBER];//worker 0 on picture is the main.
+  pthread_create(&idt[0],NULL,f1,(void*)param);
+  pthread_create(&idt[1],NULL,f2,(void*)param);
+  pthread_create(&idt[2],NULL,f3,(void*)param);
+  pthread_create(&idt[3],NULL,f4,(void*)param);
+
+  for(size_t i=0;i<NUMBER_OF_AREA;++i){
+    pthread_mutex_lock(&(param->mut));//Main is the first one, so no need to check if he can work on the area
+    sleep(1);//Working on the i'th area
+    param->last_thread_on_that_zone[i]++;//So the first thread can take that area
+    pthread_mutex_unlock(&(param->mut));//Done with that area
+  }
+  
+  for(size_t i=0;i<THREAD_NUMBER:++i){
+    pthread_join(idt[i],NULL);
+  }
+  
+  free(param);
+}
