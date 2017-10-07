@@ -1,5 +1,5 @@
-
-#define _GNU_SOURCE 
+/*gcc -ansi -Wall -pedantic -o 1 1.1.c -lpthread -std=c99*/
+ 
 #include <stdio.h>
 #include <pthread.h>
 #include <unistd.h>
@@ -10,11 +10,7 @@
 int i=0;
 
 void * f1(void* p){
-  //pthread_t moi = pthread_self();
-  for(int i=0;i<4;i++){
-    printf("I am %d!\n",++i);
-  }
-  return NULL;
+  pthread_exit(NULL);
 }
 
 int main(){
@@ -27,5 +23,6 @@ int main(){
       return 1;
     }
   }
+  //Not waiting for them because that exercices is useless.
   return 0;
 }

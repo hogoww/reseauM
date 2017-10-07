@@ -1,3 +1,4 @@
+/*gcc -ansi -Wall -pedantic -o 2_1 2.1.c -lpthread -std=c99*/
 #include <stdio.h>
 #include <pthread.h>
 #include <stdlib.h>
@@ -27,7 +28,7 @@ void printTab(int t[]){
 
 
 int main(){
-  for(int i=0;i<SIZE;i++){//init rapidement vérifiable
+  for(int i=0;i<SIZE;i++){//init easy to check
     tab1[i]=i+1;
     tab2[i]=SIZE-i;
   }
@@ -51,7 +52,7 @@ int main(){
     
     pthread_join(idT[i],(void*)a);
     sum+=**a;
-    free(*a);//on rend le pointeur alloc dans la fct
+    free(*a);//give back the return pointer to system
   }
   free(a);
   printf("%d\n",sum);

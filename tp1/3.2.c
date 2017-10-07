@@ -1,3 +1,4 @@
+/*gcc -ansi -Wall -pedantic -o 3_2 3.2.c -lpthread -std=c99*/
 #include <stdio.h>
 #include <pthread.h>
 #include <stdlib.h>

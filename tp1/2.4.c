@@ -1,3 +1,4 @@
+/*gcc -ansi -Wall -pedantic -o 2_4 2.4.c -lpthread -std=c99*/
 #include <stdio.h>
 #include <pthread.h>
 #include <stdlib.h>
@@ -31,7 +32,7 @@ void printTab(int t[]){
 
 
 int main(){
-  for(int i=0;i<SIZE;i++){//init rapidement vérifiable
+  for(int i=0;i<SIZE;i++){
     tab1[i]=i+1;
     tab2[i]=SIZE-i;
   }

@@ -1,3 +1,5 @@
+/*gcc -ansi -Wall -pedantic -o 2_2 2.2.c -lpthread -std=c99*/
+
 #include <stdio.h>
 #include <pthread.h>
 #include <stdlib.h>
@@ -14,7 +16,7 @@ void* adding_thread(void* p){
   *res=0;
   for(int i=0;i<SIZE;i++){
     if(tabR[i]==NULL){
-      sleep(1);//C'est NUL ._.
+      sleep(1);//or while(1), both of them sucks anyway
     }
     else{
       *res+=*tabR[i];
