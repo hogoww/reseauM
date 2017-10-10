@@ -103,32 +103,37 @@ int n_verrou_destroy(struct n_verrou* v){//Ne dispence pas d'un free de la struc
 
 void traitement1(){
   sleep(1);
-  printf("traitement 1 fait\n");
 }
 
 void traitement2(){
   sleep(1);
-  printf("traitement 2 fait\n");
 }
 
 void traitement3(){
   sleep(2);
-  printf("traitement 3 fait\n");
 }
 
 
 void* threadWork(void* param){
   struct n_verrou* p=(struct n_verrou*)param;
+
+  printf("traitement 1 commencé\n");
   traitement1();
+  printf("traitement 1 finis\n");
   if(n_verrou_lock(p)!=0){
     fprintf(stderr,"problème de lock du mutex multiple dans threadWork\n");
   }
+
+  printf("traitement 2 commencé\n");
   traitement2();
+  printf("traitement 2 finis\n");
   if(n_verrou_unlock(p)!=0){
     fprintf(stderr,"problème d'unlock du mutex multiple dans threadWork\n");
     pthread_exit(NULL);
   }
+  printf("traitement 3 commencé\n");
   traitement3();
+  printf("traitement 3 finis\n");
 
   pthread_exit(NULL);
 }
