@@ -1,0 +1,38 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/msg.h>
+#include <string.h>
+#include "structCalculatorMessage.h"
+
+#include <sys/types.h>
+#include <sys/ipc.h>
+
+
+int main(int argc,char** argv){
+  if(argc!=4){
+    printf("\nUsage : ./client1 number1 operator number2\n\n");
+    return 1;
+  }
+
+  key_t k=ftok(MESSAGE_QUEUE_FILE_CALC,3147);
+  if(k==-1){
+    printf("file doesn't exist for ftok\n");
+  }
+  printf("res : %d\n",k);  
+  int file=msgget(k,IPC_CREAT|0666);
+  
+  struct calculator_Message* buffer=malloc(sizeof(struct calculator_Message));
+  
+  if(calculator_Message_init(buffer,atoi(argv[1]),atoi(argv[3]),argv[2][0])){//not much verification, lazy.
+    return 1;
+  }
+
+  msgsnd(file,buffer,sizeof(struct Query),0);
+  printf("Query send\n");
+  msgrcv(file,buffer,(size_t)sizeof(struct Query),getpid()+4,0);//offset of 4 on pid, since we have 4 op
+  printf("res : %d\n",buffer->q.res);
+  
+  free(buffer);
+
+  return 0;
+}
