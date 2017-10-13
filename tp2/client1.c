@@ -20,16 +20,17 @@ int main(int argc,char** argv){
   if(k==-1){
     printf("file doesn't exist for ftok\n");
   }
-  int file=msgget(k,IPC_CREAT|0666);
+  int file=-1;
+  file=msgget(k,0666 | IPC_CREAT);
   printf("file : %d\n",file);
   
-  struct calculator_Message* buffer=malloc(sizeof(struct calculator_Message));
+  struct calculator_Message buffer;
   
-  if(calculator_Message_init(buffer,atoi(argv[1]),atoi(argv[3]),argv[2][0])){//not much verification, lazy.
+  if(calculator_Message_init(&buffer,atoi(argv[1]),atoi(argv[3]),argv[2][0])){//not much verification, lazy.
     return 1;
   }
-
-  if(-1==msgsnd(file,buffer,sizeof(struct Query),0)){
+  
+  if(msgsnd(file,(void*)&buffer,sizeof(struct Query),0)==-1){
     fprintf(stderr,"problème msgsnd : %s.\n",strerror(errno));
     return 1;
   }
@@ -37,14 +38,12 @@ int main(int argc,char** argv){
     printf("Query send\n");
   }
 
-  if(-1==msgrcv(file,buffer,(size_t)sizeof(struct Query),1/* getpid()+4 */,0)){//offset of 4 on pid, since we have 4 op    
+  if(-1==msgrcv(file,&buffer,(size_t)sizeof(struct Query),(long)1/* getpid()+4 */,0)){//offset of 4 on pid, since we have 4 op    
     fprintf(stderr,"problème msgrcv : %s.\n",strerror(errno));
     return 1;
   }
 
-  printf("res : %d\n",buffer->q.res);
+  printf("res : %d\n",buffer.q.res);
   
-  free(buffer);
-
   return 0;
 }

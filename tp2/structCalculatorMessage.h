@@ -7,8 +7,8 @@
 #define CALC_MUL 3
 
 
-#define MESSAGE_QUEUE_FILE_CALC "./messageQueue.txt"
-#define MESSAGE_QUEUE_FILE_PROG_ID 'a'
+#define MESSAGE_QUEUE_FILE_CALC "./msgsend.c"
+#define MESSAGE_QUEUE_FILE_PROG_ID 1
 
 #include <unistd.h>
 #include <stdio.h>
@@ -22,7 +22,7 @@ struct Query{
 };
 
 struct calculator_Message{
-  long label;
+  long int label;
   struct Query q;
 };
 
