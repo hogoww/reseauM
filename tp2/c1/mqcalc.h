@@ -16,7 +16,7 @@ struct Query{
   int n2;
   int op;
   int res;
-  int cpi;//Calling process ID
+  long cpi;//Calling process ID
 };
 
 struct mq_calc{

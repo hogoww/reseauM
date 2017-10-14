@@ -20,8 +20,8 @@ int mq_calc_init(struct mq_calc *c,int num1,int num2,char operator){
   default:
     return 1;
   }
-  c->label=0;//to be changed
-  c->q.cpi=1;
+  c->label=1;//to be changed
+  c->q.cpi=2;
   return 0;
 }
 
