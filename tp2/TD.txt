@@ -1,0 +1,16 @@
+1 Files de messages
+
+1. /
+2. /
+3. La calculatrice récupère les méssages étiquetés 1, chaque query récupère les messages étiquetés getpid() + 1 (Nombre de valeur reservées par la calculatrice)
+4. Les query récupères les messages étiquetés getpid() + Nombre_de_calculatrices. Chaque calculatrice prend une étiquette entre 1 et Nombre_de_calculatrice
+5. /
+6. - /
+   - N'arriveras pas avec mon schema algorithmique.
+   - Il suffit de lancer la calculatrice avec mon code.
+   - Avec test, Le fichier dois exister pour la création de la file, il ne semble pas nécessaire pour s'y "connecter".
+
+
+2 File de message pour la synchronisation
+
+1. Je le fairais plus tard.

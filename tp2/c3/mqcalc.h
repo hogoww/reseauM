@@ -1,7 +1,7 @@
 #ifndef MQ_CALC_H
 #define MQ_CALC_H
 
-#define MQ_KEY_FILE "./mqcalc.c"
+#define MQ_KEY_FILE "./t.t"
 #define MQ_KEY_NUM 1
 
 #define MQ_C_ADD 1
