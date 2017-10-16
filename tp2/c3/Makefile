@@ -1,11 +1,8 @@
-CC = gcc
-PROGNAME = main
-SOURCE = structCalculatorMessage.c calc.c
 FLAGS = -Wall
 
 #too lazy to do a good one
 all : 
-	@rm -f $(PROGNAME) *.o *~ \#*
+	@rm -f calc query *.o *~ \#*
 	@ls
 	@gcc -c mqcalc.c $(FLAGS)
 	@gcc -c calc.c $(FLAGS)
