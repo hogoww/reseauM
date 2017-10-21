@@ -13,4 +13,19 @@
 
 2 File de message pour la synchronisation
 
-1. Je le fairais plus tard.
+1. Une file avec 3 types de requetes:
+   Client demande "je veux la main" label #1
+   Client dis "j'ai finis avec cette ressource" label #2
+   Attribution de la ressource label #PID processus + offset (ici +2)
+2. cf 1
+3.La file à besoin d'IO bloquante.
+4.
+	-Si une requete de demande qui se perd -> le processus demandeur est bloqué. -> Panne difficile à gérer. Un timeout sur la requete peut etre embétant.
+	-Une requete de rendu de mémoire se perd -> Tout le monde est bloqué. -> Timeout sur l'utilisation de la mémoire
+	-Une requete d'attribution de mémoire se perd -> Tout le monde est bloqué. ->Timeout sur l'utilisation de la mémoire
+	-Si la file d'attente disparait, les programmes ne seront pas bloqués, mais ne pourront plus accéder à la ressource. Si c'était leur unique tache, ils s'arreterons. ->compliqué.
+5. Un systeme de client - serveur.
+
+2.1 Décomposition parrallele
+ cf code
+
