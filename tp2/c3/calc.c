@@ -52,7 +52,7 @@ int main(){
 
   mqid=-1;
   mqid=msgget(k, 0666 | IPC_CREAT);
-  if(mqid==-1){fprintf(stderr, "Problem msggets : %s.\n",strerror(errno));sigINT_handler(SIGINT);}else{printf("mqid : %d\n",mqid);}
+  if(mqid==-1){fprintf(stderr, "Problem msgget : %s.\n",strerror(errno));sigINT_handler(SIGINT);}else{printf("mqid : %d\n",mqid);}
 
   pthread_t idt[4];//idthread, for th join // worker 0 on picture is the main.
   pthread_create(&idt[0],NULL,calcAdd,NULL);
