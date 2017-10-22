@@ -1,5 +1,9 @@
 /*gcc -Wall -o d decomp.c -lm*/
+/*
+Note: I didn't do the multiple entries throught main func by lazyness. You just have to fork again so one mainFunc is getting number, and the other one is getting and displaying the result.
 
+The main problem is to treat every number without mixing them. which can be achieved by declaring that you can't have more than an amount of number.
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -11,8 +15,7 @@
 #include <sys/wait.h>
 #include <math.h>
 
-#define MAX_TREATMENT 5
-#define BUFF_SIZE 9
+#define OFFSET 1
 
 void MainFunc(int nbProcess,int mqid);
 void ForkedFunc(int nbProcess,int mqid);
@@ -28,6 +31,7 @@ void exitmsg_init(struct exitmsg *m,pid_t e){
 struct numberMsg{
   int baseNumber;//Will be used as a label back
   int newNumber;
+  int wayback;
 };
 
 struct msg{
@@ -36,9 +40,9 @@ struct msg{
 };
 
 void msg_init(struct msg* m,int baseNum){
-  m->label=2;
+  m->label=1;
   m->n.baseNumber=baseNum;
-  m->n.newNumber=-1;
+  m->n.newNumber=baseNum;
 }
 
 void msg_putNewNumber(struct msg *m,int newNum,int isAtomic){
@@ -57,12 +61,15 @@ int main(int argc,char** argv){
   }
   
   int nbProc=atoi(argv[1]);
-
   
   key_t k=ftok("d",35);//progname
   if(k==-1){fprintf(stderr, "Problem ftok : %s.\n",strerror(errno));exit(EXIT_FAILURE);}else{printf("key : %d\n",k);}
   
   int mqid=-1;
+  mqid=msgget(k, 0666 | IPC_CREAT);
+  if(mqid==-1){fprintf(stderr, "Problem msgget : %s.\n",strerror(errno));exit(EXIT_FAILURE);}else{printf("mqid : %d\n",mqid);}
+  msgctl(mqid,IPC_RMID,NULL);//reset queue
+
   mqid=msgget(k, 0666 | IPC_CREAT);
   if(mqid==-1){fprintf(stderr, "Problem msgget : %s.\n",strerror(errno));exit(EXIT_FAILURE);}else{printf("mqid : %d\n",mqid);}
 
@@ -86,9 +93,7 @@ int main(int argc,char** argv){
   struct exitmsg e;
   for(i=0;i<nbProc;i++){//Wave of kill signal to childs
     if(msgsnd(mqid,&e,0,0)==-1){fprintf(stderr, "Problem msgsnd exitmsg : %s.\n",strerror(errno));}
-
-    exitmsg_init(&e,children[i]);
-    
+    exitmsg_init(&e,children[i]+OFFSET);
   }
   
   for(i=0;i<nbProc;i++){//We wait for the childs to cleanly stop the process.
@@ -96,47 +101,22 @@ int main(int argc,char** argv){
   }
   
   msgctl(mqid,IPC_RMID,NULL);//Delete mq on leave
-  
   return 0;  
 }
 
-int getFirstIndex(int* tab,int size){
-  int i;
-  while(i<size){
-    if(tab[i]==-1){
-      return i;//this spot is empty
-    }
-    i++;
-  }
-  return -1;//tab is full
-}
-
 void MainFunc(int nbProcess,int mqid){
-  
   int working=1;
-  char* input=malloc(sizeof(char)*BUFF_SIZE);
   int number;
-
   
   while(working){
-    printf("Give me a number, i'll decompose it ! Send \"end\" to make me exit\n");
-    scanf("%9s",input);
-    printf("%s\n",input);
+    printf("Give me a number > 0, i'll decompose it ! Give me a negative number to make me stop\n");
+    scanf("%d",&number);
+    printf("%d\n",number);
 
-    if(input[0]=='\0'){
-      fprintf(stderr,"i don't like empty strings");
-      continue;
-    }
-
-    if(input[0]=='e' && input[1]=='n' && input[2]=='d'){
+    if(number<=0){
       working=0;
-      printf("Seems we're done here, exiting properly");
+      printf("Seems we're done here, exiting properly\n");
       break;//We'll send signal in the main
-    }
-    number=atoi(input);//too lazy to check if it's an int or not
-    if(number<0){
-      fprintf(stderr,"I'm only working on positive numbers");
-      continue;
     }
 
     struct msg m;
@@ -144,16 +124,23 @@ void MainFunc(int nbProcess,int mqid){
     
     if(msgsnd(mqid,&m,(size_t)sizeof(struct numberMsg),0)==-1){fprintf(stderr, "Problem msgsnd MainFunc : %s.\n",strerror(errno));}
     
-    int acc;
+    int acc=1;
+    int first=1;//for a nice display :)
     while(acc!=number){
       struct msg buff;
       if(msgrcv(mqid,&buff,(size_t)sizeof(struct numberMsg),number,0)==-1){fprintf(stderr, "Problem msgrcv MainFunc : %s.\n",strerror(errno));}
-      printf("%d ",buff.n.newNumber);
+      
       acc*=buff.n.newNumber;
+      if(first){
+	printf("%d",buff.n.newNumber);
+	first=0;
+      }
+      else{
+	printf("*%d",buff.n.newNumber);
+      }
     }
-    printf("= %d",number);
+    printf("=%d\n",number);
   }
-  free(input);
 }
 
 void ForkedFunc(int nbProcess,int mqid){
@@ -164,20 +151,29 @@ void ForkedFunc(int nbProcess,int mqid){
 
     struct msg buff;
     if(msgrcv(mqid,&buff,(size_t)sizeof(struct numberMsg),1,0)==-1){fprintf(stderr, "Problem msgrcv ForkedFunc: %s.\n",strerror(errno));}
-
+    //printf("got a new number to treat : %d\n",buff.n.newNumber);
+    
     int i=2;
     int factorFound=0;
-    int lim=sqrt(buff.n.baseNumber);
-    while(!factorFound && i<lim){
+    int lim=sqrt(buff.n.newNumber);
+    
+    while(!factorFound && i<=lim){
       if(buff.n.newNumber%i==0){
+	int f2=buff.n.newNumber/i;
+	if(f2==1){
+	  continue;//it's not a factor;
+	}
 	struct msg new1;
 	msg_init(&new1,buff.n.baseNumber);
 	msg_putNewNumber(&new1,i,0);
+	
 	struct msg new2;
 	msg_init(&new2,buff.n.baseNumber);
-	msg_putNewNumber(&new1,buff.n.baseNumber/i,0);
-
-	if(msgsnd(mqid,&new2,(size_t)sizeof(struct numberMsg),0)==-1){fprintf(stderr, "Problem msgsnd ForkedFunc: %s.\n",strerror(errno));}
+	msg_putNewNumber(&new2,f2,0);
+	/* printf("\nfactor %d\n",i); */
+	/* printf("\nfactor %d\n",new2.n.newNumber); */
+	
+	if(msgsnd(mqid,&new1,(size_t)sizeof(struct numberMsg),0)==-1){fprintf(stderr, "Problem msgsnd ForkedFunc: %s.\n",strerror(errno));}
 	if(msgsnd(mqid,&new2,(size_t)sizeof(struct numberMsg),0)==-1){fprintf(stderr, "Problem msgsnd ForkedFunc: %s.\n",strerror(errno));}
 
 	factorFound=1;
@@ -186,6 +182,7 @@ void ForkedFunc(int nbProcess,int mqid){
       i++;
     }
     if(!factorFound){
+      /* printf("didn't found anything for %d \n",buff.n.newNumber); */
       struct msg new;
       msg_init(&new,buff.n.baseNumber);
       msg_putNewNumber(&new,buff.n.newNumber,1);
