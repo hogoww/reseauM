@@ -1,4 +1,6 @@
 /*gcc -Wall -o d decomp.c -lm*/
+
+//Undefined behavior if input isn't a number                                                             
 /*
 Note: I didn't do the multiple entries throught main func by lazyness. You just have to fork again so one mainFunc is getting number, and the other one is getting and displaying the result.
 
@@ -17,21 +19,22 @@ The main problem is to treat every number without mixing them. which can be achi
 
 #define OFFSET 1
 
-void MainFunc(int nbProcess,int mqid);
-void ForkedFunc(int nbProcess,int mqid);
+void MainFunc(int nbProc,pid_t* children,int mqid);
+void ForkedFunc(int nbProc,int mqid);
 
 struct exitmsg{
   long label;
+  int done;
 };
 
-void exitmsg_init(struct exitmsg *m,pid_t e){
+void exitmsg_init(struct exitmsg *m,pid_t e,int isDone){
   m->label=(long)e;
+  m->done=isDone;
 }
 
 struct numberMsg{
   int baseNumber;//Will be used as a label back
   int newNumber;
-  int wayback;
 };
 
 struct msg{
@@ -68,7 +71,7 @@ int main(int argc,char** argv){
   int mqid=-1;
   mqid=msgget(k, 0666 | IPC_CREAT);
   if(mqid==-1){fprintf(stderr, "Problem msgget : %s.\n",strerror(errno));exit(EXIT_FAILURE);}else{printf("mqid : %d\n",mqid);}
-  msgctl(mqid,IPC_RMID,NULL);//reset queue
+  msgctl(mqid,IPC_RMID,NULL);//reset queue in case of crash.
 
   mqid=msgget(k, 0666 | IPC_CREAT);
   if(mqid==-1){fprintf(stderr, "Problem msgget : %s.\n",strerror(errno));exit(EXIT_FAILURE);}else{printf("mqid : %d\n",mqid);}
@@ -78,45 +81,58 @@ int main(int argc,char** argv){
   pid_t mainPID=getpid();
   size_t i;
   for(i=0;i<nbProc;i++){
-    children[i] = fork ();
+    children[i]=fork();
     if(children[i]==0){//I'm in the a son.
       free(children);//Don't need them here.
       ForkedFunc(nbProc,mqid);
       break;
     }
   }
-  
+
   if(getpid()==mainPID){
-    MainFunc(nbProc,mqid);
+    MainFunc(nbProc,children,mqid);
   }
   
-  struct exitmsg e;
-  for(i=0;i<nbProc;i++){//Wave of kill signal to childs
-    if(msgsnd(mqid,&e,0,0)==-1){fprintf(stderr, "Problem msgsnd exitmsg : %s.\n",strerror(errno));}
-    exitmsg_init(&e,children[i]+OFFSET);
-  }
   
   for(i=0;i<nbProc;i++){//We wait for the childs to cleanly stop the process.
     wait(&children[i]);
   }
+
+  if(getpid()==mainPID){
+    free(children);
+    msgctl(mqid,IPC_RMID,NULL);//Delete mq on leave
+  }
   
-  msgctl(mqid,IPC_RMID,NULL);//Delete mq on leave
-  return 0;  
+  return 0;
 }
 
-void MainFunc(int nbProcess,int mqid){
+void MainFunc(int nbProc,pid_t* children,int mqid){
   int working=1;
   int number;
   
   while(working){
-    printf("Give me a number > 0, i'll decompose it ! Give me a negative number to make me stop\n");
+    printf("Give me a number > 0, i'll decompose it ! if number<=0, i'll stop \n");
     scanf("%d",&number);
-    printf("%d\n",number);
+    //printf("%d\n",number);
 
     if(number<=0){
       working=0;
       printf("Seems we're done here, exiting properly\n");
+      struct exitmsg e;
+      int i;
+      for(i=0;i<nbProc;i++){//Wave of kill signal to children
+	exitmsg_init(&e,children[i]+OFFSET,1);
+	if(msgsnd(mqid,&e,sizeof(int),0)==-1){fprintf(stderr, "Problem msgsnd exitmsg : %s.\n",strerror(errno));}
+      }
       break;//We'll send signal in the main
+    }
+    else{
+      struct exitmsg e;
+      int i;
+      for(i=0;i<nbProc;i++){//Wave of not kill signal to childrens
+	exitmsg_init(&e,children[i]+OFFSET,0);
+	if(msgsnd(mqid,&e,sizeof(int),0)==-1){fprintf(stderr, "Problem msgsnd exitmsg : %s.\n",strerror(errno));}
+      }
     }
 
     struct msg m;
@@ -143,11 +159,15 @@ void MainFunc(int nbProcess,int mqid){
   }
 }
 
-void ForkedFunc(int nbProcess,int mqid){
+void ForkedFunc(int nbProc,int mqid){
   int working=1;
   while(working){
     struct exitmsg e;
-    if(msgrcv(mqid,&e,(size_t)0,getpid(),IPC_NOWAIT)==-1){if(!errno==ENOMSG){fprintf(stderr, "Problem msgrcv : %s.\n",strerror(errno));}}else{working=0;continue;}
+    if(msgrcv(mqid,&e,(size_t)sizeof(int),getpid()+OFFSET,0)==-1){fprintf(stderr, "Problem msgrcv ForkedFunc : %s.\n",strerror(errno));}
+    if(e.done){
+      printf("Forked process exiting!\n");
+      return;
+    }
 
     struct msg buff;
     if(msgrcv(mqid,&buff,(size_t)sizeof(struct numberMsg),1,0)==-1){fprintf(stderr, "Problem msgrcv ForkedFunc: %s.\n",strerror(errno));}
@@ -189,5 +209,6 @@ void ForkedFunc(int nbProcess,int mqid){
       if(msgsnd(mqid,&new,(size_t)sizeof(struct numberMsg),0)==-1){fprintf(stderr, "Problem msgsnd ForkedFunc : %s.\n",strerror(errno));}
     }
   }
+  printf("Forked process exiting!");
 }
 
