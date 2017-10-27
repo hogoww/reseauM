@@ -10,51 +10,104 @@ key_t getKey(){
   static key_t key=-2;/*key=-1 or a positive number, so init will be done once.*/
   if(key==-2)
     ftok(FILE_KEY,INT_KEY);
-  return key;/*If k=-1, trying to ftok again won't work anyway, so you have to check if the file exist, or give another file.*/
+  return key;
+  /*If k=-1, trying to ftok again won't work anyway, so you have to check if the file exist, or give another file.*/
 }
 
-int createSem(int nbSem,int initialValue){
+int createSem(int initialValue){
+  return createSemAux(initialValue);
+}
+
+int createSemAux(int initialValue){
   static int semId=-2;/*key=-1 or a positive number, so init will be done once.*/
   int returnVal;
   union semun u;
    
   if(semId==-2){
-    semId=semget(getKey(),nbSem, 0600|IPC_CREAT);
-    if(semId==-1){
-      return -1;
+    /*only init will concerne itself with this*/
+    if(initialValue!=-1){
+      semId=semget(getKey(),NB_SEM, 0600|IPC_CREAT);
+      if(semId==-1){
+	return -1;
+      }
+      u.val=initialValue;
+      returnVal=semctl(semId,0,SETVAL,u);
+      u.val=0;/*accumulator to check when we're done*/
+      returnVal=semctl(semId,1,SETVAL,u);
+      printf("init value=%d\n",semctl(getSemId(),0,GETVAL));
+      if(returnVal==-1){/*so we can differenciate the two issues*/
+	fprintf(stderr, "Problem semctl setVal : %s.\n",strerror(errno));
+	return -1;
+      }
     }
-    u.val=initialValue;
-    returnVal=semctl(semId,0,SETVAL,u);
-    if(returnVal==-1){/*so we can differenciate the two issues*/
-      fprintf(stderr, "Problem semctl setVal : %s.\n",strerror(errno));
-      return -1;
+    else{
+      semId=semget(getKey(),NB_SEM, 0600);
+      if(semId==-1){
+	return -1;
+      }
     }
   }
   return semId;
 }
 
 int getSemId(){
-  return createSem(0,0);/*SemID is already created, so doesn't need the args again.*/
+  return createSem(-1);/*SemID is already created, so doesn't need the args again.*/
 }
 
 int deleteSem(){
-  return semctl(createSem(0,0),0,IPC_RMID);
+  return semctl(getSemId(),0,IPC_RMID);
 }
 
-int attachMeToSem(){
-  return createSem(0,0);
+
+int waiting(){
+  /*We first decrement the semaphore, to signal some is waiting*/
+  if(decSem(0)==-1){fprintf(stderr, "Problem semop dec : %s.\n",strerror(errno));return -1;}
+  printf("sem[0]=%d\n",semctl(getSemId(),0,GETVAL));
+  /*Then we wait for the others to get there*/
+  if(waitSem(0)==-1){fprintf(stderr, "Problem semop wait : %s.\n",strerror(errno));return -1;}
+  /*printf("sem[0]=%d\n",semctl(getSemId(),0,GETVAL));*/
+  /*then we increment the other one so init knows when the semaphore is no longuer needed, and can shutdown*/
+  if(incSem(1)==-1){fprintf(stderr, "Problem semop inc : %s.\n",strerror(errno));return -1;}
+  /*printf("sem[1]=%d\n",semctl(getSemId(),1,GETVAL));*/
+  return 0;
 }
 
-int waitSem(int numSem){
-  struct sembuf dec;
+int waitSem(int numSem){  
   struct sembuf w;
-  dec.sem_num=numSem;
-  dec.sem_op=-1;
-  dec.sem_flg=SEM_UNDO;
-  if(semop(getSemId(),&dec,1)==-1){fprintf(stderr, "Problem semop dec : %s.\n",strerror(errno));return -1;}
-
   w.sem_num=numSem;
   w.sem_op=0;
-  w.sem_flg=SEM_UNDO;
+  w.sem_flg=0;
   return semop(getSemId(),&w,1);
+}
+
+int decSem(int numSem){
+  struct sembuf dec;
+  dec.sem_num=numSem;
+  dec.sem_op=-1;
+  dec.sem_flg=0;
+  return semop(getSemId(),&dec,1);
+}
+
+int incSem(int numSem){
+  struct sembuf inc;
+  inc.sem_num=numSem;
+  inc.sem_op=+1;
+  inc.sem_flg=0;
+  return semop(getSemId(),&inc,1);
+}
+
+int addSem(int numSem,int value){
+  struct sembuf add;
+  add.sem_num=numSem;
+  add.sem_op=value;
+  add.sem_flg=0;
+  return semop(getSemId(),&add,1);  
+}
+
+int subSem(int numSem,int value){
+  struct sembuf sub;
+  sub.sem_num=numSem;
+  sub.sem_op=-value;
+  sub.sem_flg=0;
+  return semop(getSemId(),&sub,1);  
 }
