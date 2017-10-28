@@ -32,8 +32,6 @@ int createSemAux(int initialValue){
       }
       u.val=initialValue;
       returnVal=semctl(semId,0,SETVAL,u);
-      u.val=0;/*accumulator to check when we're done*/
-      returnVal=semctl(semId,1,SETVAL,u);
       printf("init value=%d\n",semctl(getSemId(),0,GETVAL));
       if(returnVal==-1){/*so we can differenciate the two issues*/
 	fprintf(stderr, "Problem semctl setVal : %s.\n",strerror(errno));
@@ -58,19 +56,6 @@ int deleteSem(){
   return semctl(getSemId(),0,IPC_RMID);
 }
 
-
-int waiting(){
-  /*We first decrement the semaphore, to signal some is waiting*/
-  if(decSem(0)==-1){fprintf(stderr, "Problem semop dec : %s.\n",strerror(errno));return -1;}
-  printf("sem[0]=%d\n",semctl(getSemId(),0,GETVAL));
-  /*Then we wait for the others to get there*/
-  if(waitSem(0)==-1){fprintf(stderr, "Problem semop wait : %s.\n",strerror(errno));return -1;}
-  /*printf("sem[0]=%d\n",semctl(getSemId(),0,GETVAL));*/
-  /*then we increment the other one so init knows when the semaphore is no longuer needed, and can shutdown*/
-  if(incSem(1)==-1){fprintf(stderr, "Problem semop inc : %s.\n",strerror(errno));return -1;}
-  /*printf("sem[1]=%d\n",semctl(getSemId(),1,GETVAL));*/
-  return 0;
-}
 
 
 /*

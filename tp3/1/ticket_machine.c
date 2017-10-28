@@ -34,8 +34,15 @@ int main(){
 	  got_a_spot=1;
 	}
 	else{
-	  printf("No spot remaining\n");
-	  sleep(2);
+	  if(errno==EAGAIN){
+	    printf("No spot remaining\n");
+	    sleep(2);
+	  }
+	  else{
+	    fprintf(stderr,"problem decSem_nowait : %s\n",strerror(errno));
+	    fprintf(stderr,"Did the semaphore stop working?\n");
+	    exit(EXIT_FAILURE);
+	  }
 	}
       }
     }

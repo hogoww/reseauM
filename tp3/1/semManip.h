@@ -12,7 +12,7 @@
 
 #define FILE_KEY "semManip.h"
 #define INT_KEY 5
-#define NB_SEM 2
+#define NB_SEM 1
 
 union semun {
   int val;
@@ -26,8 +26,6 @@ int createSem(int initialValue);
 int getSemId();
 int deleteSem();
 
-int waiting();
-
 int addSem(int numSem,int value);
 int subSem(int numSem,int value);
 int decSem_nowait(int numSem);
@@ -35,6 +33,8 @@ int decSem(int numSem);
 int incSem(int numSem);
 int waitSem(int numSem);
 
+
+/*Shouldn't ever be used outside of semManip.c*/
 key_t getKey();
 int createSemAux(int initialValue);
 #endif

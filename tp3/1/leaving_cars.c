@@ -35,6 +35,8 @@ int main(){
       }
       else{
 	fprintf(stderr, "Problem incSem : %s.\n",strerror(errno));
+	fprintf(stderr,"Did the semaphore stop working?\n");
+	exit(EXIT_FAILURE);
       }
     }
     else{
