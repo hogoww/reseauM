@@ -1,0 +1,62 @@
+Loading 00debian-vars...done
+Loading /etc/emacs/site-start.d/50cmake-data.el (source)...done
+Loading /etc/emacs/site-start.d/50dictionaries-common.el (source)...
+Loading debian-ispell...
+Loading /var/cache/dictionaries-common/emacsen-ispell-default.el (source)...done
+Loading debian-ispell...done
+Loading /var/cache/dictionaries-common/emacsen-ispell-dicts.el (source)...done
+Loading /etc/emacs/site-start.d/50dictionaries-common.el (source)...done
+Loading paren...done
+For information about GNU Emacs and the GNU system, type C-h C-a.
+typical_process.c has auto save data; consider M-x recover-this-file
+Loading cc-langs...done
+Loading vc-git...done
+Mark set
+Saving file /home/hogo/Desktop/reseauM/tp3/3/typical_process.c...
+Wrote /home/hogo/Desktop/reseauM/tp3/3/typical_process.c
+Mark set
+init.c has auto save data; consider M-x recover-this-file
+Auto-saving...done
+Mark set
+Replaced 5 occurrences
+Mark set [3 times]
+Saving file /home/hogo/Desktop/reseauM/tp3/3/init.c...
+Wrote /home/hogo/Desktop/reseauM/tp3/3/init.c
+Mark set
+Auto-saving...done
+Auto-saving...done
+Mark set
+Saving file /home/hogo/Desktop/reseauM/tp3/3/semManip.h...
+Wrote /home/hogo/Desktop/reseauM/tp3/3/semManip.h
+Mark saved where search started
+Mark set
+Saving file /home/hogo/Desktop/reseauM/tp3/3/init.c...
+Wrote /home/hogo/Desktop/reseauM/tp3/3/init.c
+Mark saved where search started
+Mark set
+Auto-saving...done
+Mark set [2 times]
+Saving file /home/hogo/Desktop/reseauM/tp3/3/init.c...
+Wrote /home/hogo/Desktop/reseauM/tp3/3/init.c
+Mark set [2 times]
+Saving file /home/hogo/Desktop/reseauM/tp3/3/semManip.h...
+Wrote /home/hogo/Desktop/reseauM/tp3/3/semManip.h
+Quit
+Scanning for dabbrevs...done
+Expansion found in 'semManip.h'
+Mark set
+Auto-saving...done
+Making completion list... [2 times]
+Mark set [3 times]
+Auto-saving...done
+Mark set [9 times]
+Auto-saving...done
+Auto-saving...done
+Mark set
+Saving file /home/hogo/Desktop/reseauM/tp3/3/typical_process.c...
+Wrote /home/hogo/Desktop/reseauM/tp3/3/typical_process.c
+Quit
+(No changes need to be saved)
+Quit
+(No changes need to be saved)
+completing-read-default: Command attempted to use minibuffer while in minibuffer
