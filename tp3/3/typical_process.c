@@ -7,13 +7,16 @@ It's not a good practice, don't do it!
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <time.h>
 
 void ForkedFunc(int my_num){
   int i;
+
+  srand(time(NULL));
   for(i=0;i<NB_AREA;i++){
     if(subSem(i,my_num)==-1){fprintf(stderr,"Problem init subsem (wait) : %s.\n",strerror(errno));exit(EXIT_FAILURE);}
-    sleep(1);/*make it random*/
-
+    sleep(rand()%3);/*make it random*/
+    
     /*+1 so the next one can take it*/
     if(addSem(i,my_num+1)==-1){fprintf(stderr,"Problem init subsem (wait) : %s.\n",strerror(errno));exit(EXIT_FAILURE);}
   }
@@ -34,14 +37,12 @@ int main(int argc,char** argv){
   }
 
  
-  
-  for(i=0;i<NB_PROCESS;i++){/*We wait for the childs to cleanly stop the process.*/
-    wait(&children[i]);
-  }
-
   if(getpid()==mainPID){
+    for(i=0;i<NB_PROCESS;i++){/*We wait for the childs to cleanly stop the process.*/
+      wait(&children[i]);
+    }
     free(children);
-  }
+  }   
   
   exit(EXIT_SUCCESS);
 }

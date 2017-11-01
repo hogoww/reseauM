@@ -65,13 +65,17 @@ int waiting(){
   printf("sem[0]=%d\n",semctl(getSemId(),0,GETVAL));
   /*Then we wait for the others to get there*/
   if(waitSem(0)==-1){fprintf(stderr, "Problem semop wait : %s.\n",strerror(errno));return -1;}
-  /*printf("sem[0]=%d\n",semctl(getSemId(),0,GETVAL));*/
+  printf("sem[0]=%d\n",semctl(getSemId(),0,GETVAL));
   /*then we increment the other one so init knows when the semaphore is no longuer needed, and can shutdown*/
   if(incSem(1)==-1){fprintf(stderr, "Problem semop inc : %s.\n",strerror(errno));return -1;}
-  /*printf("sem[1]=%d\n",semctl(getSemId(),1,GETVAL));*/
+  printf("sem[1]=%d\n",semctl(getSemId(),1,GETVAL));
   return 0;
 }
 
+/*
+We didn't use the SEM_UNDO flag for theses semaphore, because it would cancel the operation processus did in ex2 on exit. Which would make the init bug
+It's unimportant in case we only use one operation at a time anyway
+*/
 int waitSem(int numSem){  
   struct sembuf w;
   w.sem_num=numSem;

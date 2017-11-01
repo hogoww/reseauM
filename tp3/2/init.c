@@ -10,7 +10,7 @@ It's not a good practice, don't do it!
 int main(int argc,char** argv){
   int nb_process;
     if(argc!=2){
-      fprintf(stderr,"\n\n Use : ./init nb_process_waiting_for_eachover\n");
+      fprintf(stderr,"\nUse : ./init nb_process_waiting_for_eachover\n");
       exit(EXIT_FAILURE);
     }
   

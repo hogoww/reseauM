@@ -30,7 +30,7 @@ int waiting();
 
 int addSem(int numSem,int value);
 int subSem(int numSem,int value);
-/* private func*/
+/*"private" functions*/
 int decSem(int numSem);
 int incSem(int numSem);
 int waitSem(int numSem);
