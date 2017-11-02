@@ -16,11 +16,10 @@ void ForkedFunc(int my_num){
   srand(time(NULL));
 
   printf("process #%d reporting for duty\n",my_num);
-  printf("%d\n",getSemId());
   for(i=0;i<NB_AREA;++i){
     if(subSem(i,my_num)==-1){fprintf(stderr,"Problem subsem (wait) : %s.\n",strerror(errno));exit(EXIT_FAILURE);}
     sleeep=rand()%3;
-    /* printf("process #%d gonna work for %d secondes on area #%d\n",my_num,sleeep,i); */
+    printf("process #%d gonna work for %d secondes on area #%d\n",my_num,sleeep,i);
     sleep(sleeep);
     
     /*+1 so the next one can take it*/
@@ -50,9 +49,9 @@ int main(int argc,char** argv){
       ForkedFunc(i+1); 
       break;
     }
-    else{
-      printf("created process #%d\n",i);
-    }
+    /* else{ */
+    /*   printf("created process #%d\n",i); */
+    /* } */
   }
 
  
