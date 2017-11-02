@@ -9,7 +9,7 @@
 key_t getKey(){
   static key_t key=-2;/*key=-1 or a positive number, so init will be done once.*/
   if(key==-2)
-    ftok(FILE_KEY,INT_KEY);
+    key=ftok(FILE_KEY,INT_KEY);
   return key;
   /*If k=-1, trying to ftok again won't work anyway, so you have to check if the file exist, or give another file.*/
 }
@@ -31,17 +31,17 @@ int createSemAux(int creator){
   int returnVal;
   union semun u;
   int i;
-  /*so the first process can take it.*/
 
+
+  /*so the first process can take it.*/
   if(semId==-2){
-    /*only init will concerne itself with this*/
+    /*only init.c will concerne itself with this*/
     if(creator==1){
-      semId=semget(getKey(),NB_SEM, 0600|IPC_CREAT);
-      semctl(semId,0,IPC_RMID);
-      semId=semget(semId,NB_SEM, 0600|IPC_CREAT);
+      semId=semget(getKey(),NB_SEM, 0600|IPC_CREAT|IPC_EXCL);
       if(semId==-1){
 	return -1;
       }
+
       u.val=1;
       for(i=0;i<NB_AREA;i++){
 	returnVal=semctl(semId,i,SETVAL,u);
@@ -61,7 +61,7 @@ int createSemAux(int creator){
       }
     }
     else{
-      semId=semget(getKey(),NB_SEM, 0600);
+      semId=semget(getKey(),NB_SEM,0600);
       if(semId==-1){
 	return -1;
       }
@@ -71,7 +71,7 @@ int createSemAux(int creator){
 }
 
 int getSemId(){
-  return createSem(0);/*SemID is already created, so doesn't need the args again.*/
+  return createSemAux(0);/*if link is already done, will immediatly return the id, otherwise, will create it before returning it.*/
 }
 
 int deleteSem(){

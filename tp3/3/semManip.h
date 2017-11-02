@@ -39,6 +39,6 @@ int incSem(int numSem);
 int waitSem(int numSem);
 /*Shouldn't ever be used outside of semManip.c*/
 key_t getKey();
-int createSemAux(int initialValue);
+int createSemAux(int creator);
 
 #endif

@@ -9,7 +9,7 @@
 key_t getKey(){
   static key_t key=-2;/*key=-1 or a positive number, so init will be done once.*/
   if(key==-2)
-    ftok(FILE_KEY,INT_KEY);
+    key=ftok(FILE_KEY,INT_KEY);
   return key;
   /*If k=-1, trying to ftok again won't work anyway, so you have to check if the file exist, or give another file.*/
 }
@@ -51,7 +51,7 @@ int createSemAux(int initialValue){
 }
 
 int getSemId(){
-  return createSem(-1);/*SemID is already created, so doesn't need the args again.*/
+  return createSemAux(-1);/*SemID is already created, so doesn't need the args again.*/
 }
 
 int deleteSem(){

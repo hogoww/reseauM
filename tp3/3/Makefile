@@ -1,4 +1,4 @@
-FLAGS = -Wall -pedantic
+FLAGS = -Wall -pedantic -g
 
 #too lazy to do a good one
 all : 
