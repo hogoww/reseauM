@@ -2,12 +2,13 @@ FLAGS = -Wall -pedantic
 
 #too lazy to do a good one
 all : 
-	@rm -f init *.o *~ \#*
+	@rm -f t init *.o *~ \#*
 	@ls
 	@gcc -c semManip.c $(FLAGS)
 	@gcc -c init.c $(FLAGS)
 	@gcc -o init init.o semManip.o $(FLAGS)
-	@gcc -o t typical_process.c semManip.o $(FLAGS)
+	@gcc -c typical_process.c $(FLAGS)
+	@gcc -o t typical_process.o semManip.o $(FLAGS)
 
 
 

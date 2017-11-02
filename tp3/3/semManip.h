@@ -29,6 +29,7 @@ union semun {
 int createSem();
 int getSemId();
 int deleteSem();
+void printSem();
 
 int addSem(int numSem,int value);
 int subSem(int numSem,int value);

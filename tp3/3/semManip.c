@@ -18,6 +18,14 @@ int createSem(){
   return createSemAux(1);
 }
 
+void printSem(){
+  int i;
+  for(i=0;i<NB_SEM;i++){
+    printf("%d ",semctl(getSemId(),i,GETVAL));
+  }
+  printf("\n");
+}
+
 int createSemAux(int creator){
   static int semId=-2;/*key=-1 or a positive number, so init will be done once.*/
   int returnVal;
@@ -29,13 +37,15 @@ int createSemAux(int creator){
     /*only init will concerne itself with this*/
     if(creator==1){
       semId=semget(getKey(),NB_SEM, 0600|IPC_CREAT);
+      semctl(semId,0,IPC_RMID);
+      semId=semget(semId,NB_SEM, 0600|IPC_CREAT);
       if(semId==-1){
 	return -1;
       }
       u.val=1;
       for(i=0;i<NB_AREA;i++){
 	returnVal=semctl(semId,i,SETVAL,u);
-	/* printf("init value=%d\n",semctl(getSemId(),0,GETVAL)); */
+	/*printf("%d\n",semctl(semId,i,GETVAL));*/
 	if(returnVal==-1){/*so we can differenciate the two issues*/
 	  fprintf(stderr, "Problem semctl setVal iteration %d : %s.\n",i,strerror(errno));
 	  return -1;
@@ -44,6 +54,7 @@ int createSemAux(int creator){
       u.val=0;/*for clean exit*/
       returnVal=semctl(semId,NB_SEM-1,SETVAL,u);
       /* printf("init value=%d\n",semctl(getSemId(),0,GETVAL)); */
+
       if(returnVal==-1){
 	fprintf(stderr, "Problem semctl setVal wait sem: %s.\n",strerror(errno));
 	return -1;
@@ -110,7 +121,7 @@ int subSem(int numSem,int value){
   sub.sem_num=numSem;
   sub.sem_op=-value;
   sub.sem_flg=0;
-  return semop(getSemId(),&sub,1);  
+  return semop(getSemId(),&sub,1);
 }
 
 
