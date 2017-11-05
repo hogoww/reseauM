@@ -1,7 +1,7 @@
 /* Not everything is useful here, just did some stuff for other exercises */
 
-#ifndef SEM_MANIP_EX_2
-#define SEM_MANIP_EX_2
+#ifndef SEM_MANIP_EX_1
+#define SEM_MANIP_EX_1
 
 #include <sys/types.h>
 #include <sys/ipc.h>
