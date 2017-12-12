@@ -132,3 +132,4 @@ int decSem_nowait(int numSem){
   dec.sem_flg=IPC_NOWAIT;
   return semop(getSemId(),&dec,1);
 }
+

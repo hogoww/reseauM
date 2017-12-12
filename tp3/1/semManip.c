@@ -32,7 +32,7 @@ int createSemAux(int initialValue){
       }
       u.val=initialValue;
       returnVal=semctl(semId,0,SETVAL,u);
-      printf("init value=%d\n",semctl(getSemId(),0,GETVAL));
+      /*printf("init value=%d\n",semctl(semId,0,GETVAL));*/
       if(returnVal==-1){/*so we can differenciate the two issues*/
 	fprintf(stderr, "Problem semctl setVal : %s.\n",strerror(errno));
 	return -1;
